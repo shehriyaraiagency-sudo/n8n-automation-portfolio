@@ -1,0 +1,787 @@
+{
+  "name": "Telegram AI Bot - Complex",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "WORKFLOW: Telegram Bot with Conversation Memory\nPurpose: Telegram message → load history → Groq LLM → save → reply\nMemory: Supabase messages table (last 10 messages per user)\nModel: llama-3.3-70b-versatile (Groq)\nCommands: /start, /help, /reset (clears Supabase history)\nError Handling: Groq failure → fallback message\nUX: Typing indicator before Groq response\nRate Limit: Max 5 messages per 60 seconds per user\nStatus: DEV\nBuilt: 25th May",
+        "height": 176,
+        "width": 512,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "9886535d-d20d-4b9f-969e-199117dcda46",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Welcome! 👋 I am your AI assistant.\n\nI am here to help you with your questions.\nSimply send me a message and I will respond.\n\nType /help to see available commands.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        -192
+      ],
+      "id": "f544ae6c-0a6d-44c6-acce-9c3b9aa3abb4",
+      "name": "/start",
+      "webhookId": "4f4ce09c-89b0-4aec-8975-a5c7b32e72fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Available commands:\n\n/start — Welcome message\n/help — Show this menu\n/reset — Clear conversation history\n\nFor anything else, just type your message.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        0
+      ],
+      "id": "e5023948-348c-438d-bcb7-d9aecf33ec6b",
+      "name": "/help",
+      "webhookId": "4f4ce09c-89b0-4aec-8975-a5c7b32e72fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rdvunzanykjjslumxtgu.supabase.co/rest/v1/messages?chat_id=eq.{{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        496,
+        192
+      ],
+      "id": "112cd112-04f1-4947-bc25-5c39301b1631",
+      "name": "Supabase API",
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "inMCoxBD7ui7Zp0u",
+          "name": "Supabase API"
+        },
+        "supabaseApi": {
+          "id": "vvS35n4E2aqc0j2t",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Welcome! I am your AI assistant. \nSend me any message and I will help you.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        192
+      ],
+      "id": "2e1b893f-d563-409c-9be2-d94ff1713d0e",
+      "name": "/reset",
+      "webhookId": "4f4ce09c-89b0-4aec-8975-a5c7b32e72fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "llama-3.1-8b-instant"
+            },
+            {
+              "name": "messages",
+              "value": "={{ $('🔧 Build Messages').item.json.messages }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1616,
+        480
+      ],
+      "id": "528baa49-6db5-4722-b711-06a171c310a3",
+      "name": "🤖 Groq API",
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XFeDPsh0yji53tL4",
+          "name": "Groq API"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "notes": "Purpose: Sends formatted message array to Groq for LLM inference\nEndpoint: https://api.groq.com/openai/v1/chat/completions\nModel: llama-3.3-70b-versatile\nAuth: Bearer token (Groq AI credential)\nInput: messages array from Build Messages node\nOutput: choices[0].message.content"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        96
+      ],
+      "id": "a87dd76c-7a60-407d-a040-22f1994ba6cc",
+      "name": "📩 Telegram Trigger",
+      "webhookId": "bb140c48-23ca-490d-8a46-e5cd685db592",
+      "alwaysOutputData": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      },
+      "notes": "Purpose: Receives incoming Telegram messages\nMode: Webhook\nOutput: message.text (user input), message.chat.id (user identifier)\nExecute Once: OFF"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b36a88ef-6f4d-4eb4-9266-e40075cb4e1a"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "start"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "dd877f81-eccd-4e86-bc63-8690236c2bff",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "99c252db-d0a3-4f3e-8b14-c626b4a39442",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/reset",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reset"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        64
+      ],
+      "id": "df40493f-130a-4208-ae04-fc63f831eef1",
+      "name": "🔀 Command Router",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "url": "=https://rdvunzanykjjslumxtgu.supabase.co/rest/v1/messages?chat_id=eq.{{ $('📩 Telegram Trigger').item.json.message.chat.id }}&order=created_at.asc&limit=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+            },
+            {
+              "name": "apikey",
+              "value": "YOUR_SUPABASE_SERVICE_KEY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1168,
+        480
+      ],
+      "id": "8f3beb09-b19a-4507-a906-c66c83e6ae1d",
+      "name": "📂 Load History",
+      "alwaysOutputData": true,
+      "notes": "Purpose: Fetches last 10 messages for current user from Supabase\nTable: messages\nFilter: chat_id = current user\nOrder: created_at ASC (chronological for Groq context)\nLimit: 10\nAlways Output Data: ON (new users have no history)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = String($('📩 Telegram Trigger').item.json.message.chat.id);\nconst content = String($('📩 Telegram Trigger').item.json.message.text);\n\nconst response = await this.helpers.httpRequest({\n  method: 'POST',\n  url: 'https://rdvunzanykjjslumxtgu.supabase.co/rest/v1/messages',\n  headers: {\n    'Authorization': 'Bearer YOUR_SUPABASE_SERVICE_KEY',\n    'apikey': 'YOUR_SUPABASE_SERVICE_KEY',\n    'Content-Type': 'application/json'\n  },\n  body: {chat_id: chatId, role: 'user', content: content}\n});\n\nreturn [{json: {done: true}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        384
+      ],
+      "id": "06df7352-f902-40dd-ad00-9730834498f3",
+      "name": "💾 Save User Message",
+      "notes": "Purpose: Inserts current user message into Supabase before calling Groq\nTable: messages\nRole: user\nContent: message.text from Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const history = $('📂 Load History').all()\n  .map(i => ({\n    role: i.json.role,\n    content: i.json.content\n  }))\n  .filter(m => m.role && m.content && m.content.trim() !== '');\nconst messages = [\n  {role: \"system\", content: `You are a professional AI assistant for a business in Baku, Azerbaijan. \nYour job is to answer customer questions clearly and concisely.\nAlways respond in the same language the user writes in.\nNever make up information you are not sure about.\nKeep responses short and professional.`},\n  ...history,\n  {role: \"user\", content: String($('📩 Telegram Trigger').item.json.message.text)}\n];\n\nreturn [{json: {messages}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        480
+      ],
+      "id": "592329e8-0981-4104-ad3a-773ec3f26a45",
+      "name": "🔧 Build Messages",
+      "alwaysOutputData": true,
+      "notes": "Purpose: Formats full conversation history into Groq-compatible array\nStructure: [{role, content}, {role, content}...]\nIncludes: system prompt + loaded history + current message\nAlways Output Data: ON (handles empty history case)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $input.item.json.choices[0].message.content;\nconst cleaned = content.replace(/[\\u0000-\\u001F\\u007F]/g, ' ');\nreturn [{json: {cleaned_content: cleaned}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        384
+      ],
+      "id": "0722ef60-2613-41a3-9845-29a8d70c8283",
+      "name": "✂️ Clean Response",
+      "executeOnce": false,
+      "notes": "Purpose: Extracts plain text from Groq API response\nInput: choices[0].message.content\nOutput: Clean string passed to Save AI Message and Send Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = String($('📩 Telegram Trigger').item.json.message.chat.id);\nconst content = String($('✂️ Clean Response').item.json.cleaned_content);\n\nconst response = await this.helpers.httpRequest({\n  method: 'POST',\n  url: 'https://rdvunzanykjjslumxtgu.supabase.co/rest/v1/messages',\n  headers: {\n    'Authorization': 'Bearer YOUR_SUPABASE_SERVICE_KEY',\n    'apikey': 'YOUR_SUPABASE_SERVICE_KEY',\n    'Content-Type': 'application/json'\n  },\n  body: {chat_id: chatId, role: 'assistant', content: content}\n});\n\nreturn [{json: {done: true}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        384
+      ],
+      "id": "897f9c11-42f9-4bcb-b0e3-aa6bc95f3183",
+      "name": "💾 Save AI Message",
+      "notes": "Purpose: Saves Groq reply to Supabase to maintain conversation history\nTable: messages\nRole: assistant\nContent: cleaned Groq response"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('✂️ Clean Response').item.json.cleaned_content }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2512,
+        384
+      ],
+      "id": "1445b6a3-67d6-42a4-b534-461dc52dfe18",
+      "name": "📤 Send Reply",
+      "webhookId": "2e1c3048-ddb2-48c0-855e-2161c4083661",
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      },
+      "notes": "Purpose: Delivers Groq response to Telegram user\nchat_id: message.chat.id from Telegram Trigger\ntext: cleaned response from Groq\nDepends on: Node 6 and Node 7"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Sorry, I am unavailable right now. \nPlease try again later.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        576
+      ],
+      "id": "5692b0f8-e60f-46ee-a1a1-c7e925b3d14d",
+      "name": "⚠️ Fallback",
+      "webhookId": "7721345f-1432-4c2a-81fd-c9fd26df6efd",
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "[ INPUT ]\nTelegram Trigger\nSwitch",
+        "height": 80,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "ef7f3183-ed82-477a-bb67-0f3580ca43f3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "[ MEMORY ]\nLoad / Save History \nBuild Message",
+        "height": 80,
+        "width": 166,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "1f985076-3995-477b-a838-04a5b6572914",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "[ AI ]\nGroq API\nClean Response",
+        "height": 80,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "b9cf4fb0-2523-4c77-bc1b-05fa47e938d7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "[ OUTPUT ]\nSend Reply\nFallback",
+        "height": 80,
+        "width": 166,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2128,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "ffa1bca1-7838-430f-aa6f-3cfe58b6172e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot8987544324:AAER1W-6VjZ_wRxz-p7N1QZZ19JTM509RZY/sendChatAction",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $('📩 Telegram Trigger').item.json.message.chat.id }}\",\n  \"action\": \"typing\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        496,
+        384
+      ],
+      "id": "c8c1c9bc-337d-4b16-9164-6d260b94da80",
+      "name": "Typing Indicator"
+    },
+    {
+      "parameters": {
+        "url": "=https://rdvunzanykjjslumxtgu.supabase.co/rest/v1/messages?chat_id=eq.{{ $('📩 Telegram Trigger').item.json.message.chat.id }}&created_at=gte.{{ new Date(Date.now() - 60000).toISOString() }}&role=eq.user&select=count",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "count=exact"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        720,
+        384
+      ],
+      "id": "eee99030-f83b-4bbb-a2c8-774cb9a0b1ed",
+      "name": "Rate Limiting",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vvS35n4E2aqc0j2t",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f6e70e15-6435-40f4-a0b8-3e885664b4c8",
+              "leftValue": "={{ $json.count }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        384
+      ],
+      "id": "1e7bd3cc-b7a2-4b70-ba6e-e64011567e47",
+      "name": "Limit Check",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📩 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "You are sending messages too fast. Please wait a moment.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1168,
+        288
+      ],
+      "id": "f978a523-8d15-464e-af5c-6dce4efa5cf6",
+      "name": "Block Message",
+      "webhookId": "4b11253d-281a-468d-9de4-d1e08ebcd347",
+      "credentials": {
+        "telegramApi": {
+          "id": "T1bAf85ky6l7mnVw",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "[ LIMIT CHECK ]\nIF Node\nLimit Check",
+        "height": 80,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "35c98453-e710-409d-a1e6-9fa0d49cd096",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Supabase API": {
+      "main": [
+        [
+          {
+            "node": "/reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Groq API": {
+      "main": [
+        [
+          {
+            "node": "✂️ Clean Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⚠️ Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📩 Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "🔀 Command Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Command Router": {
+      "main": [
+        [
+          {
+            "node": "/start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "/help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Supabase API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Typing Indicator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📂 Load History": {
+      "main": [
+        [
+          {
+            "node": "🔧 Build Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Save User Message": {
+      "main": [
+        [
+          {
+            "node": "💾 Save AI Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔧 Build Messages": {
+      "main": [
+        [
+          {
+            "node": "🤖 Groq API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✂️ Clean Response": {
+      "main": [
+        [
+          {
+            "node": "💾 Save User Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Save AI Message": {
+      "main": [
+        [
+          {
+            "node": "📤 Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Typing Indicator": {
+      "main": [
+        [
+          {
+            "node": "Rate Limiting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limiting": {
+      "main": [
+        [
+          {
+            "node": "Limit Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Check": {
+      "main": [
+        [
+          {
+            "node": "Block Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📂 Load History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "d1b1fce4-1229-4292-a606-8f67c80b737b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "972967fbd6e5e19fde93a7c49ab34471ff8006cb9022e2afe653318dd9d2c5dc"
+  },
+  "id": "CKEH1zHS5gvoCVI4",
+  "tags": []
+}

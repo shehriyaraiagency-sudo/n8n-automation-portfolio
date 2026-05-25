@@ -1,0 +1,149 @@
+{
+  "name": "Lead Capture - n8n Form",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Coaching Application",
+        "formDescription": "Fill in your details below",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Age"
+            },
+            {
+              "fieldLabel": "Phone",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Location"
+            },
+            {
+              "fieldLabel": "Weight",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Height",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Goals",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e0d867ff-4cb5-43fa-b6a8-9cd5ffe9b9f9",
+      "name": "On form submission",
+      "webhookId": "5553b7e1-ec2f-4f44-928b-d41306ef561c"
+    },
+    {
+      "parameters": {
+        "amount": 0
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1d931c46-ad47-463d-8043-77f9414bf462",
+      "name": "Wait",
+      "webhookId": "ca5cf8e3-fd46-4996-ba6e-f97b64928cb5"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Müraciətiniz qəbul edildi",
+        "emailType": "text",
+        "message": "=Salam {{ $json.Name }},  Müraciətiniz uğurla qəbul edildi.  Qısa zamanda sizinlə əlaqə saxlayacağıq.  Hörmətlə, CoreBaku Coaching",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "CoreBaku Coaching",
+          "replyTo": "shehriyar.aiagency@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "68cabce6-616a-4f15-be79-7f580fcf3523",
+      "name": "Send a message",
+      "webhookId": "a19bb651-bd79-4a77-8d02-ae81c8fd72e5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vrMmpy04p3DNy2jB",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "WORKFLOW: Native Form Lead Capture\nPurpose: n8n hosted form submission → wait → send confirmation email to lead\nTrigger: On Form Submission (n8n native)\nWait: Delay before sending confirmation email\nStatus: DEV — replace Wait node with instant send for production\nNote: Use Google Form + Sheets Trigger for real client delivery\nBuilt: 24th May",
+        "height": 144,
+        "width": 560,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -208
+      ],
+      "id": "62075da7-8185-4e39-a8f3-56f63cc275ce",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dc332659-cdf4-4caa-bc38-c544912d4c96",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "972967fbd6e5e19fde93a7c49ab34471ff8006cb9022e2afe653318dd9d2c5dc"
+  },
+  "id": "5WJQY5YCkIH2CvlG",
+  "tags": []
+}

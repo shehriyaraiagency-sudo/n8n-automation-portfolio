@@ -1,0 +1,126 @@
+{
+  "name": "Existing Leads Processor",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "903f03ee-3861-4e9a-aa3b-0fe2bc9aca9e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1wW4X5yNRyrqDOVYuUdO2B0rd86Z5dY9g4wDkpM3RY8A",
+          "mode": "list",
+          "cachedResultName": "Google Form, n8n ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wW4X5yNRyrqDOVYuUdO2B0rd86Z5dY9g4wDkpM3RY8A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1090668025,
+          "mode": "list",
+          "cachedResultName": "Form 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wW4X5yNRyrqDOVYuUdO2B0rd86Z5dY9g4wDkpM3RY8A/edit#gid=1090668025"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "00d63edc-e0fb-4867-9f1d-3703dffde27a",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "j6cnkQACvrp8VbIp",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "We received your message",
+        "emailType": "text",
+        "message": "=Hi {{ $json.Name }},  Thank you for reaching out. We have received your message and will contact you shortly.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "f47c2f17-ba88-4fcd-a77d-681995ee7a86",
+      "name": "Send a message",
+      "webhookId": "15321e4f-f16a-4831-9a5b-1d121c60ccbf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vrMmpy04p3DNy2jB",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "WORKFLOW: Existing Leads Processor\nPurpose: One-time run to send confirmation emails to leads that existed before automation was activated\nRun: Manual — execute once then deactivate\nBuilt: 25th May",
+        "height": 112,
+        "width": 432,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        48,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "8e3cfc95-4ba3-484d-9f7a-0658df837ea8",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a8301751-a6ee-41e5-850e-a5f9aa9e5bec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "972967fbd6e5e19fde93a7c49ab34471ff8006cb9022e2afe653318dd9d2c5dc"
+  },
+  "id": "3kssrsepqedh8tVE",
+  "tags": []
+}

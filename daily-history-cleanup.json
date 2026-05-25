@@ -1,0 +1,89 @@
+{
+  "name": "Monthly History Cleanup",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 30,
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "db641aba-97e6-4953-bfef-9715d465221d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rdvunzanykjjslumxtgu.supabase.co/rest/v1/messages?created_at=lte.{{ new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0a6c6267-64a6-4098-af94-7b9bc4604c77",
+      "name": "HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "vvS35n4E2aqc0j2t",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "WORKFLOW: Daily History Cleanup\nPurpose: Deletes Supabase messages older than 30 days automatically\nSchedule: Daily at 03:00 AM\nTable: messages\nScope: All users\nStatus: ACTIVE\nBuilt: 25th May",
+        "height": 144,
+        "width": 512,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "a0f5d953-83c5-4607-ad42-a0581ccbffb7",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2920c7c7-3150-4179-bec8-0865507e7f59",
+  "meta": {
+    "instanceId": "972967fbd6e5e19fde93a7c49ab34471ff8006cb9022e2afe653318dd9d2c5dc"
+  },
+  "id": "zXXgY1UKjQX3K0lL",
+  "tags": []
+}
