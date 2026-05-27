@@ -1,0 +1,203 @@
+{
+  "name": "Car Dealer",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "12fa2a04-9cbe-49df-a5ce-fd3a2babdffa",
+      "name": "Telegram Trigger",
+      "webhookId": "7b8539f8-d30c-412a-bbd6-9a62627de827",
+      "credentials": {
+        "telegramApi": {
+          "id": "J4GVPOE1Ycs9Lack",
+          "name": "Baku Car Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1d830eee-2956-48c3-a9fd-9c47c0091cf3",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.text.toLowerCase() }}",
+              "rightValue": "test drive",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        576,
+        0
+      ],
+      "id": "561106a6-3e1d-4e5e-89ff-b80e65c63361",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "llama-3.3-70b-versatile",
+          "mode": "list",
+          "cachedResultName": "LLAMA-3.3-70B-VERSATILE"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an AI assistant for AutoPrime Baku, a car dealership in Baku, Azerbaijan.\n\nYour job:\n1. Answer questions about available cars, prices, and features\n2. Handle test drive booking requests\n3. Always respond in the same language the user writes in (Azerbaijani or English)\n\nAvailable cars:\n- Toyota Camry 2024 — $32,000 — Sedan, 2.5L, automatic\n- Hyundai Tucson 2024 — $28,000 — SUV, 1.6T, automatic\n- Kia Sportage 2024 — $26,500 — SUV, 2.0L, automatic\n- Mercedes C-Class 2023 — $55,000 — Sedan, 2.0T, automatic\n- BMW X5 2023 — $78,000 — SUV, 3.0L, automatic\n\nWhen a user wants a test drive:\n- Ask for their full name\n- Ask for their phone number\n- Ask which car they want to test drive\n- Ask preferred date and time\n- Once collected, confirm the booking and say: \"Our manager will contact you shortly.\"\n\nRules:\n- Never discuss competitors\n- Never negotiate price — say \"contact our manager for special offers\"\n- Keep responses short and professional\n- If you don't know something, say \"I'll connect you with our manager\""
+            },
+            {
+              "content": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "store": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "717828c3-2574-4a25-8697-af0743d3ae20",
+      "name": "Groq AI",
+      "credentials": {
+        "openAiApi": {
+          "id": "aT05vXPWpactEPf5",
+          "name": "Groq API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5001318292",
+        "text": "=New Test Drive Request\n\nName: {{ $('Telegram Trigger').item.json.message.chat.first_name }} {{ $('Telegram Trigger').item.json.message.chat.last_name }}\nTelegram: @{{ $('Telegram Trigger').item.json.message.chat.username }}\nMessage: {{ $('Telegram Trigger').item.json.message.text }}\n\nReply immediately — hot lead.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "524a8c4b-7122-4d7a-a8ed-3757c46b1e6c",
+      "name": "Send a text message",
+      "webhookId": "8f49422d-e430-4423-ae36-b2e95e090171",
+      "credentials": {
+        "telegramApi": {
+          "id": "J4GVPOE1Ycs9Lack",
+          "name": "Baku Car Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $('Groq AI').item.json.output[0].content[0].text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        96
+      ],
+      "id": "b616130e-15c3-4fa7-b35b-1ff8828c4a85",
+      "name": "Send a text message1",
+      "webhookId": "89459b0b-ce3a-4c8f-a314-796244bce6e9",
+      "credentials": {
+        "telegramApi": {
+          "id": "J4GVPOE1Ycs9Lack",
+          "name": "Baku Car Bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Groq AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq AI": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b30d0c21-a555-4b59-8e9e-c15d8f3dce66",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "972967fbd6e5e19fde93a7c49ab34471ff8006cb9022e2afe653318dd9d2c5dc"
+  },
+  "id": "zNwN2EkES9Bm5S6f",
+  "tags": []
+}
