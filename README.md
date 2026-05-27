@@ -1,6 +1,3 @@
-# n8n AI Automation Portfolio — Week 1
-
-Built in Baku, Azerbaijan as part of a 60-day AI automation agency roadmap.
 
 ## Workflows
 
